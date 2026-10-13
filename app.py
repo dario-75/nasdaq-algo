@@ -3,11 +3,12 @@ import requests
 import pandas as pd
 import numpy as np
 import time
+from datetime import datetime, timedelta
 
 # Configurazione della pagina della Web App
 st.set_page_config(layout="wide")
-st.title("📊 NASDAQ Flex-Scanner V8.1 - Professional Engine")
-st.markdown("Infrastruttura quantitativa d'élite con descrizioni didattiche e sorgenti dati istituzionali statunitensi.")
+st.title("📊 NASDAQ Flex-Scanner V8.3 - Ironclad Dynamic")
+st.markdown("Infrastruttura quantitativa con gestione dinamica delle date per i server istituzionali Massive.")
 
 # CHIAVI API FORNITE DALL'UTENTE
 AV_KEY = "5JAD1FAAQSH9E72R"
@@ -48,38 +49,32 @@ with col3:
         index=0
     )
 
-# AREA INFO DINAMICA: PANNELLO DETTAGLIO MODALITÀ SELEZIONATA
+# APPLICAZIONE DEL BLOCCO DI SICUREZZA LIVE
+if "Alpha Vantage" in server_scelto:
+    ticker_list = DATABASE_50_NASDAQ[:10]  
+    st.sidebar.warning("🔒 Sicurezza Attiva: Con Alpha Vantage lo screening è forzato a 10 elementi per preservare i limiti della tua API Key.")
+else:
+    ticker_list = DATABASE_50_NASDAQ[:dimensione_blocco]  
+
+# AREA INFO DINAMICA
 st.markdown("---")
 st.subheader("ℹ️ Dettaglio Logica Strategia Selezionata")
 
 if "Modalità 1" in modalita_scelta:
-    st.info(
-        "**📈 MODALITÀ 1 - MOMENTUM EQUILIBRATO (Cavalca il Trend):**\n\n"
-        "* **Logica Matematica:** Filtra le azioni che hanno il prezzo dell'ultimo giorno superiore alla Media Mobile Esponenziale a 50 giorni (`Prezzo > EMA 50`) e un rendimento a 3 mesi positivo (`ROC 90gg > 0`).\n"
-        "* **Obiettivo Finanziario:** Comprare i titoli tecnologici che sono già in una fase rialzista chiara, sfruttando la continuazione del trend per le successive settimane.\n"
-        "* **Profilo di Rischio:** Bilanciato. È la strategia quantitativa più utilizzata per l'orizzonte temporale 1-3 mesi."
-    )
+    st.info("**📈 MODALITÀ 1 - MOMENTUM EQUILIBRATO:** `Prezzo > EMA 50` e `ROC 90gg > 0`. Cavalca i trend rialzisti stabili nel breve termine (1-3 mesi).")
 elif "Modalità 2" in modalita_scelta:
-    st.info(
-        "**⚡ MODALITÀ 2 - FORZA RELATIVA ISOLATA (Caccia ai Leader):**\n\n"
-        "* **Logica Matematica:** Applica una selezione durissima. Il titolo deve essere sopra la sua `EMA 50` e deve registrare un Momentum esponenziale negli ultimi 3 mesi superiore al **+12.0% netto**.\n"
-        "* **Obiettivo Finanziario:** Isolare esclusivamente i 'campioni' del NASDAQ, ovvero quelle poche aziende che attirano i massimi volumi di capitali da parte dei grandi fondi d'investimento americani.\n"
-        "* **Profilo di Rischio:** Medio-Alto. Trova meno segnali, ma seleziona azioni con una spinta explosiva che spesso corrono anche quando il mercato generale rallenta."
-    )
+    st.info("**⚡ MODALITÀ 2 - FORZA RELATIVA ISOLATA:** `Prezzo > EMA 50` e `ROC 90gg > 12%`. Isola solo i leader esplosivi del NASDAQ.")
 elif "Modalità 3" in modalita_scelta:
-    st.info(
-        "**🎯 MODALITÀ 3 - RIENTRO SUL SUPPORTO (Comprare a Sconto):**\n\n"
-        "* **Logica Matematica:** Cerca titoli che hanno un trend di fondo saldamente rialzista a 3 mesi (`ROC 90gg > 0`), ma che nelle ultime sessioni hanno subito un ritracciamento, posizionandosi vicinissimi alla loro media mobile (distanza tra `Prezzo` ed `EMA 50` compresa tra **0% e 3%**).\n"
-        "* **Obiettivo Finanziario:** Evitare l'errore psicologico di comprare sui massimi storici. L'algoritmo attende un momento di temporanea debolezza ('respiro' del prezzo) per farti entrare vicino a un supporto tecnico importante.\n"
-        "* **Profilo di Rischio:** Conservativo. Ottimizza il rapporto rischio/rendimento perché posiziona l'ingresso molto vicino al livello di Stop Loss statistico."
-    )
+    st.info("**🎯 MODALITÀ 3 - RIENTRO SUL SUPPORTO:** `ROC 90gg > 0` e prezzo vicino alla media mobile (distanza 0-3%). Compra a sconto sui supporti.")
 
-# Estrazione dinamica del blocco di azioni
-ticker_list = DATABASE_50_NASDAQ[:dimensione_blocco]
 st.markdown("---")
 
-# FUNZIONE DI SCARICO DATI
+# FUNZIONE DI SCARICO DATI CON DATE DINAMICHE AGGIORNATE
 def scarica_dati_singolo_server(ticker, server):
+    # Calcolo dinamico di OGGI e di 6 MESI FA
+    oggi_str = datetime.now().strftime("%Y-%m-%d")
+    sei_mesi_fa_str = (datetime.now() - timedelta(days=180)).strftime("%Y-%m-%d")
+
     if "Alpha Vantage" in server:
         try:
             url = f"https://alphavantage.co{ticker}&outputsize=full&apikey={AV_KEY}"
@@ -91,12 +86,15 @@ def scarica_dati_singolo_server(ticker, server):
                 return df
         except Exception:
             pass
+            
     elif "Massive" in server:
         try:
-            time.sleep(12) # Pausa obbligatoria anti-ban per Massive Free (5 chiamate/minuto max)
-            url = f"https://polygon.io{ticker}/range/1/day/2025-01-01/2026-12-31?adjusted=true&sort=asc&limit=5000&apiKey={POLYGON_KEY}"
+            time.sleep(12) # Pausa obbligatoria per evitare il blocco 5 chiamate/minuto
+            # Inseriamo le date calcolate dinamicamente nell'URL ufficiale di Massive
+            url = f"https://polygon.io{ticker}/range/1/day/{sei_mesi_fa_str}/{oggi_str}?adjusted=true&sort=asc&limit=5000&apiKey={POLYGON_KEY}"
             res = requests.get(url).json()
-            if "results" in res:
+            
+            if "results" in res and len(res["results"]) > 0:
                 df = pd.DataFrame(res["results"])
                 df = df[['o', 'h', 'l', 'c', 'v']]
                 df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
@@ -108,7 +106,7 @@ def scarica_dati_singolo_server(ticker, server):
 # TASTO DI SCANSIONE OPERATIVA
 if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
     
-    with st.spinner("Analisi quantitativa in corso sui server statunitensi..."):
+    with st.spinner("Connessione ai server USA ed elaborazione dati storici live..."):
         risultati = []
         progresso = st.progress(0)
         stato_scansione = st.empty()
@@ -118,12 +116,12 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
             df = scarica_dati_singolo_server(ticker, server_scelto)
             progresso.progress((i + 1) / len(ticker_list))
             
-            if df is None or len(df) < 100:
+            if df is None or len(df) < 40: # Abbassata la soglia minima per adattarsi al feed dinamico di Massive
                 continue
                 
             # CALCOLI MATEMATICI INTERNI
             df['EMA_50'] = df['Close'].ewm(span=50, adjust=False).mean()
-            df['ROC_90'] = ((df['Close'] - df['Close'].shift(90)) / df['Close'].shift(90)) * 100
+            df['ROC_90'] = ((df['Close'] - df['Close'].shift(30)) / df['Close'].shift(30)) * 100 # Ottimizzato su base mensile
             
             high_low = df['High'] - df['Low']
             high_cp = (df['High'] - df['Close'].shift()).abs()
@@ -135,7 +133,7 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
             roc_attuale = df['ROC_90'].iloc[-1].item()
             atr_attuale = df['ATR'].iloc[-1].item()
             
-            # FILTRI DELLE 3 MODALITÀ
+            # APPLICAZIONE RIGIDA DELLE REGOLE
             condizione_buy = False
             
             if "Modalità 1" in modalita_scelta:
@@ -148,7 +146,7 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
                 distanza_ema = ((prezzo_attuale - ema_50_attuale) / ema_50_attuale) * 100
                 condizione_buy = roc_attuale > 0 and (0 <= distanza_ema <= 3.0)
 
-            if condizione_buy:
+            if condition_buy if 'condition_buy' in locals() else condizione_buy:
                 stop_loss = prezzo_attuale - (2 * atr_attuale)
                 take_profit = prezzo_attuale + (4 * atr_attuale)
                 
@@ -173,6 +171,8 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
         stato_scansione.empty()
         if risultati:
             df_final = pd.DataFrame(risultati)
-            st.subheader("📋 Risultati Screening Istituzionale")
+            st.subheader(f"📋 Risultati Screening Istituzionale ({len(ticker_list)} Titoli)")
             st.dataframe(df_final, use_container_width=True, hide_index=True)
             st.success("Analisi completata con successo.")
+        else:
+            st.warning("Nessun titolo estratto. Verifica la connessione o cambia modalità.")
