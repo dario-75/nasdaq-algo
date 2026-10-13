@@ -42,11 +42,13 @@ with col2:
     )
 
 with col3:
+    # Menu a tendina a blocchi da 10 a 50 corretto
     dimensione_blocco = st.selectbox(
         "📦 3. Quantità Azioni da Scansionare:",
 ,
         index=0
     )
+
 
 # AREA INFO DINAMICA: PANNELLO DETTAGLIO MODALITÀ SELEZIONATA
 st.markdown("---")
