@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 # Configurazione della pagina della Web App
 st.set_page_config(layout="wide")
-st.title("📊 NASDAQ Flex-Scanner V8.7 - Verified Stable")
+st.title("📊 NASDAQ Flex-Scanner V8.8 - Verified Stable")
 st.markdown("Infrastruttura quantitativa d'élite testata e validata con sorgenti dati ufficiali statunitensi.")
 
 # CHIAVI API FORNITE DALL'UTENTE
@@ -45,7 +45,7 @@ with col2:
 with col3:
     dimensione_blocco = st.selectbox(
         "📦 3. Quantità Azioni del Blocco:",
-       ,
+,
         index=0,
         help="Scegli il numero di titoli preimpostati da scansionare."
     )
@@ -143,7 +143,6 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
                 distanza_ema = ((prezzo_attuale - ema_50_attuale) / ema_50_attuale) * 100
                 condizione_buy = roc_attuale > 0 and (0 <= distanza_ema <= 3.0)
 
-            # CORREZIONE LOGICA RIGIDA DEL BUG DI COMPILAZIONE DI STREAMLIT
             if condizione_buy:
                 stop_loss = prezzo_attuale - (2 * atr_attuale)
                 take_profit = prezzo_attuale + (4 * atr_attuale)
