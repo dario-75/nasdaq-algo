@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 
 # Configurazione della pagina della Web App
 st.set_page_config(layout="wide")
-st.title("📊 NASDAQ Flex-Scanner V8.8 - Verified Stable")
-st.markdown("Infrastruttura quantitativa d'élite testata e validata con sorgenti dati ufficiali statunitensi.")
+st.title("📊 NASDAQ Flex-Scanner V8.9 - Slider Engine")
+st.markdown("Infrastruttura quantitativa d'élite testata con sorgenti dati ufficiali statunitensi.")
 
 # CHIAVI API FORNITE DALL'UTENTE
 AV_KEY = "5JAD1FAAQSH9E72R"
@@ -21,7 +21,7 @@ DATABASE_30_NASDAQ = [
     "SBUX", "GILD", "INTU", "MDLZ", "PDD", "REGN", "VRTX", "ISRG", "AMAT", "LRCX"
 ]
 
-# INTERFACCIA UTENTE: Menu di Configurazione con icone descrittive
+# INTERFACCIA UTENTE: 3 Colonne di Configurazione dello Scanner
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -43,11 +43,14 @@ with col2:
     )
 
 with col3:
-    dimensione_blocco = st.selectbox(
+    # SOSTITUITO IL MENU CON UNO SLIDER: Risolve definitivamente il SyntaxError delle virgole
+    dimensione_blocco = st.slider(
         "📦 3. Quantità Azioni del Blocco:",
-,
-        index=0,
-        help="Scegli il numero di titoli preimpostati da scansionare."
+        min_value=5,
+        max_value=30,
+        value=5,
+        step=5,
+        help="Muovi lo slider per scegliere quanti titoli includere nello screening."
     )
 
 # Estrazione blocco base e inserimento manuale
