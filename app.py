@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # Configurazione della pagina della Web App
-st.set_page_layout("wide")
+st.set_page_config(layout="wide")
 st.title("📊 NASDAQ Algo Scanner V3 - Professional")
 st.markdown("Algoritmo quantitativo a breve termine (1-3 mesi) con filtri di protezione Macro ed Earnings.")
 
