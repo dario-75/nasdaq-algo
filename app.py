@@ -7,29 +7,36 @@ from datetime import datetime, timedelta
 
 # Configurazione della pagina della Web App
 st.set_page_config(layout="wide")
-st.title("📊 NASDAQ Algo Scanner V9.0 - Enterprise Control")
-st.markdown("Infrastruttura quantitativa d'élite con controllo preventivo dei limiti e selezione esclusiva.")
+st.title("📊 NASDAQ Full-Scanner V10.0 - Nasdaq-100 Engine")
+st.markdown("Infrastruttura quantitativa professionale estesa all'intero paniere delle 100 più grandi aziende del NASDAQ.")
 
 # CHIAVI API FORNITE DALL'UTENTE
 AV_KEY = "5JAD1FAAQSH9E72R"
 POLYGON_KEY = "iu6rBUvWiGNLdyRj2ZXyDvf7j1ggo_gJ"
 
-# LISTA MASTER DI 30 PANIERE LEADER NASDAQ
-DATABASE_30_NASDAQ = [
+# LISTA COMPLETA DEI 100 COMPONENTI PRINCIPALI DEL NASDAQ-100 (Ordinati per capitalizzazione)
+DATABASE_100_NASDAQ = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "AVGO", "COST", "NFLX",
     "AMD", "INTC", "QCOM", "ADBE", "TXN", "AMGN", "MU", "HON", "BKNG", "PANW",
-    "SBUX", "GILD", "INTU", "MDLZ", "PDD", "REGN", "VRTX", "ISRG", "AMAT", "LRCX"
+    "SBUX", "GILD", "INTU", "MDLZ", "PDD", "REGN", "VRTX", "ISRG", "AMAT", "LRCX",
+    "CSCO", "ADP", "ADI", "MELI", "KLAC", "SNPS", "CDNS", "NXPI", "ASML", "MAR",
+    "CTSH", "ORLY", "ROP", "LULU", "MNST", "ADSK", "KDP", "CHTR", "AEP", "PAYX",
+    "PANW", "MRVL", "ORLY", "ODFL", "PCAR", "GILD", "MCHP", "AZN", "EXC", "LULU",
+    "CPRT", "CSX", "CTAS", "DLTR", "DOCU", "DXCM", "EA", "FAST", "FTNT", "IDXX",
+    "ILMN", "KHC", "MDB", "MELI", "MNST", "MRNA", "OKTA", "TEAM", "VRSK", "WDAY",
+    "XEL", "ZM", "ALGN", "ANSS", "BIIB", "DDOG", "FANG", "GEHC", "ROST", "SIRI",
+    "SPLK", "VRSN", "WBA", "WBD", "BKR", "CDW", "CEG", "COR", "TTD", "ON"
 ]
 
-# CREAZIONE DEI TESTI DI AIUTO DETTAGLIATI (PER L'ICONA CLIK/PASSAGGIO ?)
+# DETTAGLI TOOLTIP PER L'ICONA INFO
 HELP_MODALITA = (
-    "ℹ️ LOGICA DELLE STRATEGIE APPLICATE:\n\n"
-    "• Modalità 1 (Momentum Equilibrato): Filtra i titoli con prezzo sopra la media esponenziale a 50 giorni (EMA 50) e rendimento positivo a 3 mesi (ROC > 0).\n\n"
-    "• Modalità 2 (Forza Relativa Isolata): Seleziona solo le aziende leader assolute che corrono a una velocità superiore al +12% netto negli ultimi 3 mesi.\n\n"
-    "• Modalità 3 (Rientro sul Supporto): Trova titoli in forte trend a 3 mesi che hanno appena subito un piccolo ritracciamento, posizionandosi a una distanza compresa tra lo 0% e il 3% dalla loro EMA 50."
+    "ℹ️ LOGICA DELLE STRATEGIE QUANTITATIVE:\n\n"
+    "• Modalità 1 (Momentum Equilibrato): Prezzo sopra la media mobile a 50 giorni (EMA 50) e rendimento a 3 mesi positivo (ROC > 0).\n\n"
+    "• Modalità 2 (Forza Relativa Isolata): Isola solo i leader esplosivi che corrono a una velocità superiore al +12% netto negli ultimi 3 mesi.\n\n"
+    "• Modalità 3 (Rientro sul Supporto): Trova titoli in forte trend a 3 mesi che hanno appena subito un piccolo ritracciamento, posizionandosi vicini alla loro EMA 50 (distanza 0-3%)."
 )
 
-# INTERFACCIA UTENTE: Configurazione Strategia e Server
+# INTERFACCIA UTENTE
 col1, col2 = st.columns(2)
 
 with col1:
@@ -40,7 +47,7 @@ with col1:
             "Modalità 2: Forza Relativa Isolata (Alpha Seeker)",
             "Modalità 3: Rientro sul Supporto (Pullback)"
         ],
-        help=HELP_MODALITA  # Mostra la spiegazione al clik o passaggio sul '?'
+        help=HELP_MODALITA
     )
 
 with col2:
@@ -52,26 +59,24 @@ with col2:
 st.markdown("---")
 st.subheader("📦 Configurazione Universo Azionario")
 
-# RECOLA DI ESCLUSIONE RECIPROCA: Una scelta esclude l'altra
 scelta_universo = st.radio(
     "Scegli come inserire le azioni da scansionare (un'opzione esclude l'altra):",
-    ["Usa i Blocchi preimpostati (da 5 a 30 azioni)", "Inserimento Manuale Singolo (digita i ticker a mano)"]
+    ["Usa i Blocchi preimpostati (da 5 a 100 azioni)", "Inserimento Manuale Singolo (digita i ticker a mano)"]
 )
 
 ticker_list = []
 
-if scelta_universo == "Usa i Blocchi preimpostati (da 5 a 30 azioni)":
-    # Mostra lo slider solo se selezionato, nascondendo la casella manuale
+if scelta_universo == "Usa i Blocchi preimpostati (da 5 a 100 azioni)":
+    # Slider esteso fino a un massimo di 100 titoli
     dimensione_blocco = st.slider(
         "Quantità Azioni del Blocco da scansionare:",
         min_value=5,
-        max_value=30,
+        max_value=100,
         value=5,
         step=5
     )
-    ticker_list = DATABASE_30_NASDAQ[:dimensione_blocco]
+    ticker_list = DATABASE_100_NASDAQ[:dimensione_blocco]
 else:
-    # Mostra la casella di testo manuale solo se selezionata, nascondendo lo slider
     ticker_manuali_input = st.text_input(
         "✍️ Digita i simboli delle azioni separati da una virgola (es: PLTR, SMCI, TSLA):", 
         value="PLTR, SMCI"
@@ -80,14 +85,17 @@ else:
 
 st.markdown("---")
 
-# CONTROLLO AVVISO PREVENTIVO (PRIMA DI PREMERE IL BOTTONE)
+# CONTROLLO AVVISO PREVENTIVO DI SICUREZZA
 blocco_tasto_scansione = False
 
 if "Alpha Vantage" in server_scelto and len(ticker_list) > 15:
-    st.error(f"🚨 AZIONE BLOCCATA PREVENTIVAMENTE: Hai selezionato il server Alpha Vantage con un totale di {len(ticker_list)} azioni. Poiché supera il limite di sicurezza di 15 titoli, la scansione è disattivata per evitare il blocco della tua chiave API. Riduci i titoli o seleziona il server Massive.")
+    st.error(f"🚨 AZIONE BLOCCATA PREVENTIVAMENTE: Con il server Alpha Vantage hai selezionato {len(ticker_list)} azioni. Superando il limite di sicurezza di 15 titoli complessivi, il pulsante è disattivato per proteggere la tua API Key. Riduci i titoli a meno di 15 o passa al server istituzionale Massive.")
     blocco_tasto_scansione = True
 else:
-    st.write(f"🔍 **Riepilogo sessione:** {len(ticker_list)} azioni pronte per lo screening.")
+    tempo_stimato_minuti = (len(ticker_list) * 12) / 60 if "Massive" in server_scelto else 0
+    if tempo_stimato_minuti > 0:
+        st.warning(f"⏳ NOTA DI TEMPO: Lo screening su {len(ticker_list)} titoli richiederà circa {tempo_stimato_minuti:.1f} minuti su server Massive (causa pause anti-ban). Mantieni attiva questa schermata sul telefono.")
+    st.write(f"🔍 **Universo in scansione attuale:** {len(ticker_list)} azioni del paniere NASDAQ-100.")
     st.caption(f"Titoli inclusi: {', '.join(ticker_list)}")
 
 # FUNZIONE DI SCARICO DATI REALI USA
@@ -97,7 +105,7 @@ def scarica_dati_singolo_server(ticker, server):
 
     if "Alpha Vantage" in server:
         try:
-            time.sleep(12) # Pausa di sicurezza frequenza
+            time.sleep(12) 
             url = f"https://alphavantage.co{ticker}&outputsize=compact&apikey={AV_KEY}"
             res = requests.get(url).json()
             if "Time Series (Daily)" in res:
@@ -111,7 +119,7 @@ def scarica_dati_singolo_server(ticker, server):
             
     elif "Massive" in server:
         try:
-            time.sleep(12) # Pausa obbligatoria anti-ban per Massive Free
+            time.sleep(12) 
             url = f"https://polygon.io{ticker}/range/1/day/{sei_mesi_fa_str}/{oggi_str}?adjusted=true&sort=asc&limit=5000&apiKey={POLYGON_KEY}"
             res = requests.get(url).json()
             if "results" in res and len(res["results"]) > 0:
@@ -123,13 +131,13 @@ def scarica_dati_singolo_server(ticker, server):
             pass
     return None
 
-# IL TASTO DI SCANSIONE OPERATIVA VIENE DISATTIVATO SE CI SONO ERRORI PREVENTIVI
+# GESTIONE PULSANTE DI SCANSIONE LIVE
 if blocco_tasto_scansione:
     st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary", disabled=True)
 else:
     if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
         
-        with st.spinner("Estrazione e analisi matematica dei flussi finanziari statunitensi..."):
+        with st.spinner("Estrazione e analisi matematica dei flussi finanziari del NASDAQ-100..."):
             risultati = []
             progresso = st.progress(0)
             stato_scansione = st.empty()
@@ -142,7 +150,7 @@ else:
                 if df is None or len(df) < 30: 
                     continue
                     
-                # CALCOLI MATEMATICI INTERNI
+                # CALCOLI MATEMATICI INTERNI SUI DATI FORMATTATI
                 df['EMA_50'] = df['Close'].ewm(span=50, adjust=False).mean()
                 periodo_shift = min(30, len(df) - 1)
                 df['ROC_90'] = ((df['Close'] - df['Close'].shift(periodo_shift)) / df['Close'].shift(periodo_shift)) * 100 
@@ -195,4 +203,4 @@ else:
                 st.dataframe(df_final, use_container_width=True, hide_index=True)
                 st.success("Analisi completata con successo. Gestisci il rischio copiando i livelli sul tuo broker.")
             else:
-                st.error("Nessun dato estratto. Le chiavi API potrebbero essere sature o non configurate correttamente.")
+                st.error("Nessun dato estratto. Riprova tra qualche istante.")
