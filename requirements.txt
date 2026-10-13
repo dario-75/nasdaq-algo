@@ -1,3 +1,7 @@
+### 📋 Aggiorna anche il file `requirements.txt` su GitHub
+Apri il file **`requirements.txt`** su GitHub e inserisci esattamente queste righe per includere tutti e tre i canali contemporaneamente:
+```text
 streamlit
-yfinance
+requests
 pandas
+numpy
