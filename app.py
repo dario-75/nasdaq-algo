@@ -6,7 +6,7 @@ import time
 
 # Configurazione della pagina della Web App
 st.set_page_config(layout="wide")
-st.title("📊 NASDAQ Algo Scanner V8.1 - Professional Engine")
+st.title("📊 NASDAQ Flex-Scanner V8.1 - Professional Engine")
 st.markdown("Infrastruttura quantitativa d'élite con descrizioni didattiche e sorgenti dati istituzionali statunitensi.")
 
 # CHIAVI API FORNITE DALL'UTENTE
@@ -42,14 +42,11 @@ with col2:
     )
 
 with col3:
-    # Selezione del blocco numerico corretta
     dimensione_blocco = st.selectbox(
         "📦 3. Quantità Azioni da Scansionare:",
-,
+        [10, 20, 30, 40, 50],
         index=0
     )
-
-
 
 # AREA INFO DINAMICA: PANNELLO DETTAGLIO MODALITÀ SELEZIONATA
 st.markdown("---")
@@ -67,7 +64,7 @@ elif "Modalità 2" in modalita_scelta:
         "**⚡ MODALITÀ 2 - FORZA RELATIVA ISOLATA (Caccia ai Leader):**\n\n"
         "* **Logica Matematica:** Applica una selezione durissima. Il titolo deve essere sopra la sua `EMA 50` e deve registrare un Momentum esponenziale negli ultimi 3 mesi superiore al **+12.0% netto**.\n"
         "* **Obiettivo Finanziario:** Isolare esclusivamente i 'campioni' del NASDAQ, ovvero quelle poche aziende che attirano i massimi volumi di capitali da parte dei grandi fondi d'investimento americani.\n"
-        "* **Profilo di Rischio:** Medio-Alto. Trova meno segnali, ma seleziona azioni con una spinta esplosiva che spesso corrono anche quando il mercato generale rallenta."
+        "* **Profilo di Rischio:** Medio-Alto. Trova meno segnali, ma seleziona azioni con una spinta explosiva che spesso corrono anche quando il mercato generale rallenta."
     )
 elif "Modalità 3" in modalita_scelta:
     st.info(
