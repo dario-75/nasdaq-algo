@@ -77,14 +77,14 @@ else:
     )
     ticker_list_base = [t.strip().upper() for t in ticker_manuali_input.split(",") if t.strip()]
 
-# Protezione automatica API Key Alpha Vantage (Safe-Lock a max 10 elementi)
+# Protezione automatica API Key Alpha Vantage
 if "Alpha Vantage" in server_scelto and len(ticker_list_base) > 10:
     ticker_list = ticker_list_base[:10]
     st.sidebar.warning("🔒 Limite Alpha Vantage attivo: ridotto a 10 elementi per proteggere l'API Key.")
 else:
     ticker_list = ticker_list_base
 
-# PANNELLO CONTATORI PREVENTIVI IN TEMPO REALE (Pre-flight Check)
+# PANNELLO CONTATORI PREVENTIVI IN TEMPO REALE
 st.subheader("⏱️ Monitor di Sicurezza del Canale")
 tempo_pausa_singola = 0 if "Yahoo" in server_scelto else 12
 tempo_totale_stimato = len(ticker_list) * tempo_pausa_singola
@@ -100,12 +100,11 @@ with metrics_col3:
 st.caption(f"Asset inclusi nella coda: {', '.join(ticker_list)}")
 st.markdown("---")
 
-# FUNZIONE DI SCARICO DATI CON VERIFICA INTEGRATA (DIAGNOSTICA PREVENTIVA)
+# FUNZIONE DI SCARICO DATI CON VERIFICA INTEGRATA
 def scarica_dati_con_diagnostica(ticker, server):
     oggi_str = datetime.now().strftime("%Y-%m-%d")
     sei_mesi_fa_str = (datetime.now() - timedelta(days=180)).strftime("%Y-%m-%d")
 
-    # FEED 1: YAHOO (JSON di backup ultra-stabile senza chiavi private)
     if "Yahoo" in server:
         try:
             url = f"https://yahoo.com{ticker}?range=6m&interval=1d"
@@ -120,7 +119,6 @@ def scarica_dati_con_diagnostica(ticker, server):
             if len(df) > 20: return df, "Yahoo Finance"
         except Exception: pass
 
-    # FEED 2: ALPHA VANTAGE CON INTERCETTAZIONE LIMITI SOGLIA
     elif "Alpha Vantage" in server:
         try:
             url = f"https://alphavantage.co{ticker}&outputsize=compact&apikey={AV_KEY}"
@@ -133,7 +131,6 @@ def scarica_dati_con_diagnostica(ticker, server):
                 return df, "Alpha Vantage"
         except Exception: pass
             
-    # FEED 3: MASSIVE CON CONTROLLO VALIDITÀ CHIAVE (MAPPATURA CAMPI AGGIORNATA)
     elif "Massive" in server:
         try:
             url = f"https://polygon.io{ticker}/range/1/day/{sei_mesi_fa_str}/{oggi_str}?adjusted=true&sort=asc&limit=5000&apiKey={POLYGON_KEY}"
@@ -163,7 +160,6 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
             azioni_rimanenti = len(ticker_list) - i
             secondi_rimanenti = azioni_rimanenti * tempo_pausa_singola
             
-            # Aggiornamento contatore regressivo (Countdown Live)
             with pannello_contatori.container():
                 st.info(f"⏳ **STATO SCANNER:** Analisi in corso per **{ticker}**.\n\n"
                         f"• **Titoli mancanti:** {azioni_rimanenti} | • **Tempo residuo:** {secondi_rimanenti} secondi.")
@@ -174,11 +170,12 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
             df, feed_usato = scarica_dati_con_diagnostica(ticker, server_scelto)
             progresso.progress((i + 1) / len(ticker_list))
             
-            # INTERCETTAZIONE ERRORI DIAGNOSTICI DELLE CHIAVI API
+            # DIAGNOSTICA: CHIAVE MASSIVE ERRATA
             if isinstance(df, str) and df == "CHIAVE_NON_VALIDA":
                 risultati.append({"Ticker": ticker, "Prezzo": "N/D", "ROC": "-", "Segnale": "🔴 Chiave Non Valida", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": feed_usato})
                 continue
                 
+            # DIAGNOSTICA: ESODAMENTO SOGLIE LIMITI GIORNALIERI
             if isinstance(df, str) and df == "LIMITE_RAGGIUNTO":
                 risultati.append({"Ticker": ticker, "Prezzo": "N/D", "ROC": "-", "Segnale": "🔴 Limite API Raggiunto", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": feed_usato})
                 continue
@@ -187,7 +184,7 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
                 risultati.append({"Ticker": ticker, "Prezzo": "N/D", "ROC": "-", "Segnale": "🔴 Errore Canale", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": "N/D"})
                 continue
                 
-            # CALCOLI QUANTITATIVI INTERNI SULLA SERIE STORICA GENERATA
+            # CALCOLI QUANTITATIVI INTERNI SUI DATI VALIDO
             df['EMA_50'] = df['Close'].ewm(span=50, adjust=False).mean()
             periodo_shift = min(30, len(df) - 1)
             df['ROC_90'] = ((df['Close'] - df['Close'].shift(periodo_shift)) / df['Close'].shift(periodo_shift)) * 100 
@@ -202,13 +199,13 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
             roc_attuale = float(df['ROC_90'].iloc[-1])
             atr_attuale = float(df['ATR'].iloc[-1]) if not pd.isna(df['ATR'].iloc[-1]) else prezzo_attuale * 0.02
             
-# APPLICAZIONE DELLE FILTRATURE DELLE 3 STRATEGIE
-condizione_buy = False
-if "Modalità 1" in modalita_scelta:
-condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 0
-elif "Modalità 2" in modalita_scelta:
-condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 12.0
-elif "Modalità 3" in modalita_scelta:
+            # FILTRI STRATEGIA
+            condizione_buy = False
+            if "Modalità 1" in modalita_scelta:
+                condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 0
+            elif "Modalità 2" in modalita_scelta:
+                condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 12.0
+            elif "Modalità 3" in modalita_scelta:
 distanza_ema = ((prezzo_attuale - ema_50_attuale) / ema_50_attuale) * 100
 condizione_buy = roc_attuale > 0 and (0 <= distanza_ema <= 3.0)
 if condizione_buy:
@@ -223,7 +220,7 @@ risultati.append({
 "Ticker": ticker, "Prezzo": f"{prezzo_attuale:.2f} $", "ROC": f"{roc_attuale:.2f} %",
 "Segnale": "⚪ NESSUN SEGNALE", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": feed_usato
 })
-# SVUOTAMENTO PANNELLO DEI CONTATORI E STAMPA TABELLA RIGIDA REALE
+# STAMPA TABELLA DIAGNOSTICATA FINALE
 pannello_contatori.empty()
 if risultati:
 df_final = pd.DataFrame(risultati)
