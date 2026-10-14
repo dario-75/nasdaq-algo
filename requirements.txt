@@ -1,7 +1,4 @@
-### 📋 Aggiorna anche il file `requirements.txt` su GitHub
-Apri il file **`requirements.txt`** su GitHub e inserisci esattamente queste righe per includere tutti e tre i canali contemporaneamente:
-```text
-streamlit
-requests
-pandas
-numpy
+streamlit>=1.35.0
+requests>=2.31.0
+pandas>=2.2.0
+numpy>=1.26.0
