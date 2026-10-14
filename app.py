@@ -205,24 +205,24 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
                 condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 0
             elif "Modalità 2" in modalita_scelta:
                 condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 12.0
-elif "Modalità 3" in modalita_scelta:
-distanza_ema = ((prezzo_attuale - ema_50_attuale) / ema_50_attuale) * 100
-condizione_buy = roc_attuale > 0 and (0 <= distanza_ema <= 3.0)
-if condizione_buy:
-stop_loss = prezzo_attuale - (2 * atr_attuale)
-take_profit = prezzo_attuale + (4 * atr_attuale)
-risultati.append({
-"Ticker": ticker, "Prezzo": f"{prezzo_attuale:.2f} $", "ROC": f"{roc_attuale:.2f} %",
-"Segnale": "🟢 PROTETTO - BUY", "STOP LOSS": f"{stop_loss:.2f} $", "TAKE PROFIT": f"{take_profit:.2f} $", "Feed": feed_usato
-})
-else:
-risultati.append({
-"Ticker": ticker, "Prezzo": f"{prezzo_attuale:.2f} $", "ROC": f"{roc_attuale:.2f} %",
-"Segnale": "⚪ NESSUN SEGNALE", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": feed_usato
-})
-# SVUOTAMENTO PANNELLO E STAMPA TABELLA DIAGNOSTICATA FINALE
-pannello_contatori.empty()
-if risultati:
-df_final = pd.DataFrame(risultati)
-st.subheader(f"📋 Esito Screening Quantitativo - Multi-Feed Report")
-st.dataframe(df_final, use_container_width=True, hide_index=True)
+            elif "Modalità 3" in modalita_scelta:
+            distanza_ema = ((prezzo_attuale - ema_50_attuale) / ema_50_attuale) * 100
+            condizione_buy = roc_attuale > 0 and (0 <= distanza_ema <= 3.0)
+            if condizione_buy:
+                stop_loss = prezzo_attuale - (2 * atr_attuale)
+                take_profit = prezzo_attuale + (4 * atr_attuale)
+                risultati.append({
+                "Ticker": ticker, "Prezzo": f"{prezzo_attuale:.2f} $", "ROC": f"{roc_attuale:.2f} %",
+                "Segnale": "🟢 PROTETTO - BUY", "STOP LOSS": f"{stop_loss:.2f} $", "TAKE PROFIT": f"{take_profit:.2f} $", "Feed": feed_usato
+                })
+            else:
+                risultati.append({
+                "Ticker": ticker, "Prezzo": f"{prezzo_attuale:.2f} $", "ROC": f"{roc_attuale:.2f} %",
+                "Segnale": "⚪ NESSUN SEGNALE", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": feed_usato
+                })
+                # SVUOTAMENTO PANNELLO E STAMPA TABELLA DIAGNOSTICATA FINALE
+                pannello_contatori.empty()
+            if risultati:
+                df_final = pd.DataFrame(risultati)
+                st.subheader(f"📋 Esito Screening Quantitativo - Multi-Feed Report")
+                st.dataframe(df_final, use_container_width=True, hide_index=True)
