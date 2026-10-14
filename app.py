@@ -199,13 +199,13 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
             roc_attuale = float(df['ROC_90'].iloc[-1])
             atr_attuale = float(df['ATR'].iloc[-1]) if not pd.isna(df['ATR'].iloc[-1]) else prezzo_attuale * 0.02
             
-            # FILTRI STRATEGIA
+            # FILTRI STRATEGIA INDENTATI CORRETTAMENTE
             condizione_buy = False
             if "Modalità 1" in modalita_scelta:
                 condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 0
             elif "Modalità 2" in modalita_scelta:
                 condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 12.0
-            elif "Modalità 3" in modalita_scelta:
+elif "Modalità 3" in modalita_scelta:
 distanza_ema = ((prezzo_attuale - ema_50_attuale) / ema_50_attuale) * 100
 condizione_buy = roc_attuale > 0 and (0 <= distanza_ema <= 3.0)
 if condizione_buy:
@@ -220,7 +220,7 @@ risultati.append({
 "Ticker": ticker, "Prezzo": f"{prezzo_attuale:.2f} $", "ROC": f"{roc_attuale:.2f} %",
 "Segnale": "⚪ NESSUN SEGNALE", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": feed_usato
 })
-# STAMPA TABELLA DIAGNOSTICATA FINALE
+# SVUOTAMENTO PANNELLO E STAMPA TABELLA DIAGNOSTICATA FINALE
 pannello_contatori.empty()
 if risultati:
 df_final = pd.DataFrame(risultati)
