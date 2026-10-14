@@ -207,7 +207,8 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
             # FILTRI STRATEGIA
             condizione_buy = False
             if "Modalità 1" in modalita_scelta:
-                condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 0elif "Modalità 2" in modalita_scelta:
+                condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 0
+            elif "Modalità 2" in modalita_scelta:
                 condizione_buy = prezzo_attuale > ema_50_attuale and roc_attuale > 12.0
             elif "Modalità 3" in modalita_scelta:
                 distanza_ema = ((prezzo_attuale - ema_50_attuale) / ema_50_attuale) * 100
