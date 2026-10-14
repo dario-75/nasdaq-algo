@@ -184,7 +184,7 @@ if st.button("🔥 AVVIA SCANSIONE QUANTITATIVA", type="primary"):
                 risultati.append({"Ticker": ticker, "Prezzo": "N/D", "ROC": "-", "Segnale": "🔴 Errore Canale", "STOP LOSS": "-", "TAKE PROFIT": "-", "Feed": "N/D"})
                 continue
                 
-            # CALCOLI QUANTITATIVI INTERNI SUI DATI VALIDO
+            # CALCOLI QUANTITATIVI INTERNI SUL DATO VALIDO
             df['EMA_50'] = df['Close'].ewm(span=50, adjust=False).mean()
             periodo_shift = min(30, len(df) - 1)
             df['ROC_90'] = ((df['Close'] - df['Close'].shift(periodo_shift)) / df['Close'].shift(periodo_shift)) * 100 
